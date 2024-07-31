@@ -3,72 +3,87 @@ import validator from 'validator';
 import { AuthContext } from '../../context/authContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { TextField, Button, Container, Typography, Box } from '@mui/material';
 
 const SignupPage = () => {
-    const {error, handleSignup} = useContext(AuthContext);
-    const [userName, setUserName] = useState('');
-    const [password, setPassword] = useState('');
+    const { handleSignup } = useContext(AuthContext);
+    const [form, setForm] = useState({ userName: '', password: '' });
     const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
 
-    const handleUserNameChange = (e) => {
-        setUserName(e.target.value);
-    };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm({
+            ...form,
+            [name]: value,
+        });
 
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-        if (validator.isStrongPassword(e.target.value)) {
-            setPasswordError('');
-        } else {
-            setPasswordError('Password is not strong enough');
+        if (name === 'password') {
+            if (validator.isStrongPassword(value)) {
+                setPasswordError('');
+            } else {
+                setPasswordError('Password is not strong enough');
+            }
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const { userName, password } = form;
         if (validator.isStrongPassword(password)) {
-            // Handle form submission
-            console.log('Form submitted', { userName, password });
             const success = await handleSignup({ userName, password });
             if (success) {
-                toast.success("user signed up successfully");
+                toast.success("User signed up successfully");
                 navigate("/login");
             }
         } else {
             setPasswordError('Password is not strong enough');
-            toast.error("there is some error");
+            toast.error("There is some error");
         }
     };
 
     return (
-        <div>
-            <h2>Signup</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="userName">Username:</label>
-                    <input
-                        type="text"
-                        id="userName"
-                        value={userName}
-                        onChange={handleUserNameChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={handlePasswordChange}
-                        required
-                    />
-                    {passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
-                </div>
-                <button type="submit">Signup</button>
-            </form>
-        </div>
+        <Container maxWidth="xs">
+            <Box mt={5}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Signup
+                </Typography>
+                <form onSubmit={handleSubmit}>
+                    <Box mb={2}>
+                        <TextField
+                            fullWidth
+                            label="Username"
+                            name="userName"
+                            value={form.userName}
+                            onChange={handleChange}
+                            required
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <TextField
+                            fullWidth
+                            label="Password"
+                            type="password"
+                            name="password"
+                            value={form.password}
+                            onChange={handleChange}
+                            required
+                        />
+                        {passwordError && (
+                            <Typography variant="body2" color="error">
+                                {passwordError}
+                            </Typography>
+                        )}
+                    </Box>
+                    <Box mt={2}>
+                        <Button type="submit" fullWidth variant="contained" color="primary">
+                            Signup
+                        </Button>
+                    </Box>
+                </form>
+            </Box>
+        </Container>
     );
-}
+};
 
-export default SignupPage
+export default SignupPage;
